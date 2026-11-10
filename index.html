@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الإدارة - نظام النداء الصوتي الآلي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --emerald-dark: #064e3b;
+            --emerald-primary: #059669;
+            --emerald-light: #dcfce7;
+            --gold-accent: #d97706;
+            --gold-light: #fef3c7;
+            --danger-red: #dc2626;
+            --bg-gray: #f8fafc;
+            --card-white: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--emerald-dark), #022c22);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            border-bottom: 4px solid var(--gold-accent);
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            font-size: 2.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            width: 55px;
+            height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .header-title p {
+            font-size: 0.9rem;
+            color: #a7f3d0;
+        }
+
+        .tab-content {
+            padding: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            flex: 1;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-white);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--emerald-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .form-control, select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            outline: none;
+            transition: border-color 0.3s;
+            background-color: white;
+        }
+
+        .form-control:focus, select:focus {
+            border-color: var(--emerald-primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-send {
+            width: 100%;
+            background: linear-gradient(135deg, var(--emerald-dark), var(--emerald-primary));
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            border-radius: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4);
+        }
+
+        .quick-templates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .template-chip {
+            background: #f1f5f9;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            transition: all 0.2s;
+        }
+
+        .template-chip:hover {
+            background: var(--emerald-light);
+            color: var(--emerald-dark);
+            border-color: var(--emerald-primary);
+        }
+
+        .log-list {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-info h4 {
+            font-size: 1.05rem;
+            color: var(--emerald-dark);
+        }
+
+        .log-info p {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+        }
+
+        .log-time {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        footer {
+            background: white;
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        footer span {
+            color: var(--emerald-dark);
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-brand">
+            <div class="header-icon">🎛️</div>
+            <div class="header-title">
+                <h1>لوحة تحكم الإدارة - النداء الآلي</h1>
+                <p>مدرسة عمار بن ياسر الابتدائية</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="tab-content">
+        <div class="admin-grid">
+            <div class="card">
+                <div class="card-header">
+                    <span>📢 إرسال نداء جديد للفصل</span>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>اختر الصف الدراسي:</label>
+                        <select id="selectGrade" onchange="updateClassOptions()">
+                            <option value="4">الصف الرابع</option>
+                            <option value="5">الصف الخامس</option>
+                            <option value="6">الصف السادس</option>
+                            <option value="ADMIN">الإدارة</option>
+                            <option value="ALL">جميع الصفوف (نداء عام)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اختر الفصل / الشعبة:</label>
+                        <select id="selectClass">
+                            <option value="4-A">الصف الرابع (أ)</option>
+                            <option value="4-B">الصف الرابع (ب)</option>
+                            <option value="4-C">الصف الرابع (ج)</option>
+                            <option value="4-D">الصف الرابع (د)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم الطالب (اختياري للنداء الفردي):</label>
+                    <input type="text" id="studentName" class="form-control" placeholder="مثال: أحمد محمد الشهري">
+                </div>
+
+                <div class="form-group">
+                    <label>نوع التنبيه / نص النداء:</label>
+                    <input type="text" id="callMessage" class="form-control" placeholder="مثال: يرجى التوجه لمكتب الإدارة فوراً">
+                    <div class="quick-templates">
+                        <span class="template-chip" onclick="setTemplate('ولي أمر', 'ولي أمرك بانتظارك في الإدارة')">👨‍👦 ولي أمر</span>
+                        <span class="template-chip" onclick="setTemplate('الإدارة', 'يرجى التوجه لمكتب الإدارة')">🏢 الإدارة</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>مستوى الأهمية:</label>
+                    <select id="urgencyLevel">
+                        <option value="normal">عادي (نغمة هادئة)</option>
+                        <option value="urgent">عاجل جداً (تنبيه فوري ومكثف)</option>
+                    </select>
+                </div>
+
+                <button class="btn-send" onclick="sendBroadcastCall()">
+                    <span>🚀 إرسال النداء الصوتي للشاشة</span>
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span>📜 سجل النداءات المرسلة اليوم</span>
+                </div>
+                <ul class="log-list" id="callLogList">
+                    <li class="log-item" style="text-align: center; color: #94a3b8; width:100%;">لا توجد نداءات مرسلة بعد اليوم</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        إعداد وبرمجة: <span>أ. صلاح سعد الرحيمان</span> (0530166681)
+    </footer>
+
+    <script>
+        function updateClassOptions() {
+            const grade = document.getElementById('selectGrade').value;
+            const classSelect = document.getElementById('selectClass');
+            classSelect.innerHTML = '';
+
+            if (grade === 'ALL') {
+                const opt = document.createElement('option');
+                opt.value = 'ALL';
+                opt.textContent = 'جميع الفصول (نداء عام)';
+                classSelect.appendChild(opt);
+                return;
+            }
+
+            if (grade === 'ADMIN') {
+                const opt = document.createElement('option');
+                opt.value = 'ADMIN';
+                opt.textContent = 'الإدارة العامة';
+                classSelect.appendChild(opt);
+                return;
+            }
+
+            const sections = ['أ', 'ب', 'ج', 'د'];
+            const sectionCodes = ['A', 'B', 'C', 'D'];
+            const gradeNames = { '4': 'الرابع', '5': 'الخامس', '6': 'السادس' };
+
+            sections.forEach((sec, idx) => {
+                const opt = document.createElement('option');
+                opt.value = `${grade}-${sectionCodes[idx]}`;
+                opt.textContent = `الصف ${gradeNames[grade]} (${sec})`;
+                classSelect.appendChild(opt);
+            });
+        }
+
+        function setTemplate(type, msg) {
+            document.getElementById('callMessage').value = msg;
+        }
+
+        function sendBroadcastCall() {
+            const targetClass = document.getElementById('selectClass').value;
+            const studentName = document.getElementById('studentName').value.trim() || 'جميع الطلاب';
+            const message = document.getElementById('callMessage').value.trim() || 'يرجى الانتباه للتوجيه الإداري';
+            const urgency = document.getElementById('urgencyLevel').value;
+            const classNameText = document.getElementById('selectClass').selectedOptions[0].text;
+
+            const payload = {
+                targetClass: targetClass,
+                studentName: studentName,
+                message: message,
+                urgency: urgency,
+                classNameText: classNameText,
+                timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            localStorage.setItem('school_call_event', JSON.stringify(payload));
+            addToCallLog(payload);
+            alert('تم إرسال النداء بنجاح إلى شاشات الفصول المستهدفة!');
+        }
+
+        function addToCallLog(payload) {
+            const list = document.getElementById('callLogList');
+            if (list.children[0] && list.children[0].innerText.includes('لا توجد')) {
+                list.innerHTML = '';
+            }
+
+            const li = document.createElement('li');
+            li.className = 'log-item';
+            li.innerHTML = `
+                <div class="log-info">
+                    <h4>${payload.studentName} (${payload.classNameText})</h4>
+                    <p>${payload.message}</p>
+                </div>
+                <div class="log-time">${payload.timestamp}</div>
+            `;
+            list.insertBefore(li, list.firstChild);
+        }
+    </script>
+</body>
+</html>
