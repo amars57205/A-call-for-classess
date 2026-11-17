@@ -45,6 +45,8 @@
             justify-content: space-between;
             align-items: center;
             border-bottom: 4px solid var(--gold-accent);
+            position: relative;
+            z-index: 1000;
         }
 
         .header-brand h1 {
@@ -56,11 +58,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.15);
             padding: 8px 15px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         select {
@@ -72,6 +73,7 @@
             color: var(--emerald-dark);
             background: white;
             outline: none;
+            cursor: pointer;
         }
 
         .lock-btn {
@@ -133,21 +135,20 @@
         }
 
         .screen-standby-icon {
-            font-size: 5rem;
+            font-size: 4rem;
             color: var(--emerald-primary);
-            margin-bottom: 20px;
-            animation: pulse-slow 3s infinite;
+            margin-bottom: 15px;
         }
 
         .screen-title {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 900;
             color: var(--emerald-dark);
             margin-bottom: 10px;
         }
 
         .screen-desc {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--text-sub);
             margin-bottom: 25px;
         }
@@ -162,7 +163,6 @@
             border-radius: 50px;
             cursor: pointer;
             box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
-            animation: pulse-slow 2s infinite;
         }
 
         .status-badge {
@@ -181,6 +181,75 @@
             color: #166534;
         }
 
+        /* نافذة إدخال الرمز السري الداخلية الآمنة */
+        .pin-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999999;
+        }
+
+        .pin-modal-box {
+            background: white;
+            padding: 35px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            border-top: 8px solid var(--emerald-primary);
+        }
+
+        .pin-modal-box h3 {
+            margin-bottom: 15px;
+            color: var(--emerald-dark);
+            font-size: 1.4rem;
+        }
+
+        .pin-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.8rem;
+            text-align: center;
+            letter-spacing: 8px;
+            border: 2px solid #cbd5e1;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .pin-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pin-btns button {
+            flex: 1;
+            padding: 12px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .btn-confirm-pin {
+            background: var(--emerald-primary);
+            color: white;
+        }
+
+        .btn-cancel-pin {
+            background: #e2e8f0;
+            color: var(--text-main);
+        }
+
+        /* نافذة تنبيه النداء */
         .alert-overlay {
             position: fixed;
             top: 0;
@@ -192,7 +261,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 9999;
+            z-index: 99999;
             padding: 30px;
         }
 
@@ -262,11 +331,6 @@
             color: var(--emerald-dark);
             font-weight: 800;
         }
-
-        @keyframes pulse-slow {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
     </style>
 </head>
 <body>
@@ -292,7 +356,7 @@
                 <option value="6-D">الصف السادس (د)</option>
                 <option value="ADMIN">الإدارة العامة</option>
             </select>
-            <button id="changePinBtn" class="change-pin-btn" onclick="changePinCode()">🔑 تغيير الرمز</button>
+            <button id="changePinBtn" class="change-pin-btn" onclick="openChangePinModal()">🔑 تغيير الرمز</button>
             <button id="lockToggleBtn" class="unlock-btn" onclick="toggleLock()">🔓 فتح الإعدادات</button>
         </div>
     </header>
@@ -302,16 +366,29 @@
             <div class="screen-standby-icon">🔊</div>
             <div class="screen-title" id="displayTitle">اضغط هنا لتنشيط نظام الصوت</div>
             <div class="screen-desc" id="displayDesc">
-                لضمان عمل النداء الصوتي الآلي في الشاشة، يرجى النقر على الزر أدناه مرة واحدة عند تشغيل الشاشة.
+                لضمان عمل النداء الصوتي الآلي، يرجى النقر على الزر أدناه مرة واحدة عند تشغيل الشاشة.
             </div>
             <button class="btn-activate" id="activateBtn" onclick="activateAudioSystem()">
                 ⚡ تفعيل الصوت واستعداد الشاشة
             </button>
-            <br>
+            <br><br>
             <div class="status-badge" id="lockStatus">🔒 الإعدادات مقفلة برقم سري</div>
         </div>
     </main>
 
+    <!-- نافذة إدخال الرمز السري الداخلية -->
+    <div class="pin-modal-overlay" id="pinModalOverlay">
+        <div class="pin-modal-box">
+            <h3 id="pinModalTitle">أدخل الرقم السري</h3>
+            <input type="password" id="pinInputField" class="pin-input" maxlength="6" placeholder="••••">
+            <div class="pin-btns">
+                <button class="btn-confirm-pin" onclick="submitPinCode()">تأكيد</button>
+                <button class="btn-cancel-pin" onclick="closePinModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة تنبيه النداء -->
     <div class="alert-overlay" id="alertOverlay">
         <div class="alert-modal" id="alertModalBox">
             <div class="alert-badge" id="alertBadge">استدعاء إداري</div>
@@ -326,6 +403,8 @@
     </footer>
 
     <script>
+        let pinCallback = null;
+
         function getPin() {
             return localStorage.getItem('screen_secret_pin') || "1234";
         }
@@ -336,7 +415,6 @@
             const saved = localStorage.getItem('assigned_screen_class');
             if (saved) {
                 document.getElementById('screenClassSelect').value = saved;
-                saveScreenClass();
             }
             updateLockUI();
         };
@@ -350,7 +428,7 @@
                 window.speechSynthesis.speak(testUtterance);
                 
                 document.getElementById('displayTitle').innerText = "شاشة العرض الذكية نشطة";
-                document.getElementById('displayDesc').innerHTML = `الفصل الحالي: <span id="currentClassLabel" style="color: var(--gold-accent); font-weight: 800;">${document.getElementById('screenClassSelect').selectedOptions[0].text}</span>`;
+                document.getElementById('displayDesc').innerHTML = `الفصل الحالي: <span style="color: var(--gold-accent); font-weight: 800;">${document.getElementById('screenClassSelect').selectedOptions[0].text}</span>`;
                 
                 const btn = document.getElementById('activateBtn');
                 btn.style.background = "#059669";
@@ -361,41 +439,62 @@
             }
         }
 
-        // تم تحسين دالة فتح الإعدادات لضمان عملها بشكل فوري ودون تعارض
+        function showPinModal(title, callback) {
+            document.getElementById('pinModalTitle').innerText = title;
+            document.getElementById('pinInputField').value = '';
+            document.getElementById('pinModalOverlay').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('pinInputField').focus();
+            }, 100);
+            pinCallback = callback;
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModalOverlay').style.display = 'none';
+            pinCallback = null;
+        }
+
+        function submitPinCode() {
+            const val = document.getElementById('pinInputField').value;
+            closePinModal();
+            if (pinCallback) {
+                pinCallback(val);
+            }
+        }
+
         function toggleLock() {
-            const pin = getPin();
             if (!isUnlocked) {
-                let userPin = prompt("أدخل الرقم السري لفتح إعدادات الشاشة (الافتراضي 1234):");
-                if (userPin !== null) {
-                    if (userPin.trim() === pin) {
+                showPinModal("أدخل الرقم السري لفتح الإعدادات (افتراضي 1234):", function(enteredPin) {
+                    if (enteredPin === getPin()) {
                         isUnlocked = true;
-                        alert("تم فتح الإعدادات بنجاح. يمكنك الآن تغيير الفصل.");
+                        alert("تم فتح الإعدادات بنجاح.");
+                        updateLockUI();
                     } else {
                         alert("الرمز السري غير صحيح!");
                     }
-                }
+                });
             } else {
                 isUnlocked = false;
                 alert("تم إقفال وتأمين الشاشة بنجاح.");
+                updateLockUI();
             }
-            updateLockUI();
         }
 
-        function changePinCode() {
-            const currentPinInput = prompt("أدخل الرقم السري الحالي:");
-            if (currentPinInput !== null) {
-                if (currentPinInput.trim() === getPin()) {
-                    const newPin = prompt("أدخل الرقم السري الجديد:");
-                    if (newPin && newPin.trim() !== "") {
-                        localStorage.setItem('screen_secret_pin', newPin.trim());
-                        alert("تم تحديث الرقم السري بنجاح!");
-                    } else if (newPin !== null) {
-                        alert("لم يتم إدخال رقم صحيح.");
-                    }
+        function openChangePinModal() {
+            showPinModal("أدخل الرقم السري الحالي:", function(currentPin) {
+                if (currentPin === getPin()) {
+                    showPinModal("أدخل الرقم السري الجديد:", function(newPin) {
+                        if (newPin && newPin.trim() !== "") {
+                            localStorage.setItem('screen_secret_pin', newPin.trim());
+                            alert("تم تحديث الرقم السري بنجاح!");
+                        } else {
+                            alert("لم يتم إدخال رقم صحيح.");
+                        }
+                    });
                 } else {
                     alert("الرقم السري الحالي غير صحيح!");
                 }
-            }
+            });
         }
 
         function updateLockUI() {
@@ -408,14 +507,14 @@
                 classSelect.disabled = false;
                 changePinBtn.style.display = "inline-block";
                 lockToggleBtn.className = "lock-btn";
-                lockToggleBtn.innerHTML = "🔒 إغلاق وتأمين الشاشة";
+                lockToggleBtn.innerHTML = "🔒 قفل الإعدادات";
                 lockStatus.className = "status-badge active";
                 lockStatus.innerText = "🔓 وضع التعديل متاح (مفتوح)";
             } else {
                 classSelect.disabled = true;
                 changePinBtn.style.display = "none";
                 lockToggleBtn.className = "unlock-btn";
-                lockToggleBtn.innerHTML = "🔓 فتح الإعدادات (رمز سري)";
+                lockToggleBtn.innerHTML = "🔓 فتح الإعدادات";
                 lockStatus.className = "status-badge";
                 lockStatus.innerText = "🔒 الشاشة مؤمنة ومقفلة برقم سري";
             }
@@ -424,15 +523,25 @@
         function saveScreenClass() {
             const val = document.getElementById('screenClassSelect').value;
             localStorage.setItem('assigned_screen_class', val);
+            const selectEl = document.getElementById('screenClassSelect');
+            if(selectEl && selectEl.selectedOptions[0]) {
+                document.getElementById('displayDesc').innerHTML = `الفصل الحالي: <span style="color: var(--gold-accent); font-weight: 800;">${selectEl.selectedOptions[0].text}</span>`;
+            }
         }
 
+        // الاستماع للأحداث القادمة من لوحة التحكم بتمييز دقيق لكل فصل
         window.addEventListener('storage', function(e) {
-            if (e.key === 'school_call_event') {
-                const data = JSON.parse(e.newValue);
-                const currentScreenClass = document.getElementById('screenClassSelect').value;
+            if (e.key === 'school_call_event' && e.newValue) {
+                try {
+                    const data = JSON.parse(e.newValue);
+                    const currentScreenClass = document.getElementById('screenClassSelect').value;
 
-                if (data.targetClass === 'ALL' || data.targetClass === currentScreenClass) {
-                    displayCallOnScreen(data);
+                    // التحقق هل النداء موجه لهذا الفصل بالذات أو نداء عام (ALL)
+                    if (data.targetClass === 'ALL' || data.targetClass === currentScreenClass) {
+                        displayCallOnScreen(data);
+                    }
+                } catch (err) {
+                    console.error("خطأ في قراءة بيانات النداء", err);
                 }
             }
         });
@@ -455,13 +564,15 @@
 
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const speechText = `تنبيه لفصل ${document.getElementById('screenClassSelect').selectedOptions[0].text}. الطـالب. ${data.studentName}. ${data.message}`;
+                const currentClassName = document.getElementById('screenClassSelect').selectedOptions[0].text;
+                const speechText = `تنبيه لفصل ${currentClassName}. الطالب ${data.studentName}. ${data.message}`;
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ar-SA';
                 utterance.rate = 0.85;
                 window.speechSynthesis.speak(utterance);
             }
 
+            // الحذف التلقائي وإغلاق التنبيه بعد دقيقة واحدة (60 ثانية)
             setTimeout(() => {
                 closeAlertOverlay();
             }, 60000);
