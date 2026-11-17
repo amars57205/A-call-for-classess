@@ -375,7 +375,8 @@
                 timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
             };
 
-            localStorage.setItem('school_call_event', JSON.stringify(payload));
+            // استخدام رقم عشوائي لضمان تحديث التخزين المحلي حتى لو تكرر نفس النداء
+            localStorage.setItem('school_call_event', JSON.stringify({ ...payload, randomId: Math.random() }));
             addToCallLog(payload);
             alert('تم إرسال النداء بنجاح إلى شاشات الفصول المستهدفة!');
         }
