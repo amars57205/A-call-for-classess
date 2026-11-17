@@ -60,6 +60,7 @@
             padding: 8px 15px;
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 10;
         }
 
         select {
@@ -303,7 +304,6 @@
             <div class="screen-desc" id="displayDesc">
                 لضمان عمل النداء الصوتي الآلي في الشاشة، يرجى النقر على الزر أدناه مرة واحدة عند تشغيل الشاشة.
             </div>
-            <!-- زر تفاعلي رئيسي لفتح قفل الصوت في المتصفح -->
             <button class="btn-activate" id="activateBtn" onclick="activateAudioSystem()">
                 ⚡ تفعيل الصوت واستعداد الشاشة
             </button>
@@ -325,14 +325,7 @@
         إعداد وبرمجة: <span>أ. صلاح سعد الرحيمان</span> (0530166681)
     </footer>
 
-    <!-- عنصر صوتي احتياطي (Audio Context / Silent Audio) لكسر حماية المتصفح -->
-    <audio id="silentAudio" preload="auto">
-        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
-    </audio>
-
     <script>
-        let audioUnlocked = false;
-
         function getPin() {
             return localStorage.getItem('screen_secret_pin') || "1234";
         }
@@ -348,19 +341,14 @@
             updateLockUI();
         };
 
-        // دالة تفعيل وتنشيط محرك الصوت (إلغاء حظر المتصفح)
         function activateAudioSystem() {
             if ('speechSynthesis' in window) {
-                // إجبار المتصفح على منح الصلاحية الصوتية عبر نطق رسالة أولية قصيرة
                 window.speechSynthesis.cancel();
                 const testUtterance = new SpeechSynthesisUtterance("تم تفعيل النظام الصوتي بنجاح");
                 testUtterance.lang = 'ar-SA';
                 testUtterance.volume = 1;
                 window.speechSynthesis.speak(testUtterance);
                 
-                audioUnlocked = true;
-                
-                // تغيير واجهة الشاشة لتصبح جاهزة وفي وضع الاستعداد
                 document.getElementById('displayTitle').innerText = "شاشة العرض الذكية نشطة";
                 document.getElementById('displayDesc').innerHTML = `الفصل الحالي: <span id="currentClassLabel" style="color: var(--gold-accent); font-weight: 800;">${document.getElementById('screenClassSelect').selectedOptions[0].text}</span>`;
                 
@@ -369,18 +357,22 @@
                 btn.innerHTML = "✅ الصوت والاتصال يعملان بامتياز";
                 btn.disabled = true;
             } else {
-                alert("عذراً، متصفحك لا يدعم ميزة التحدث الآلي (Speech Synthesis).");
+                alert("عذراً، متصفحك لا يدعم ميزة التحدث الآلي.");
             }
         }
 
+        // تم تحسين دالة فتح الإعدادات لضمان عملها بشكل فوري ودون تعارض
         function toggleLock() {
+            const pin = getPin();
             if (!isUnlocked) {
-                const userPin = prompt("أدخل الرقم السري لفتح إعدادات الشاشة:");
-                if (userPin === getPin()) {
-                    isUnlocked = true;
-                    alert("تم فتح الإعدادات بنجاح.");
-                } else if (userPin !== null) {
-                    alert("الرمز السري غير صحيح!");
+                let userPin = prompt("أدخل الرقم السري لفتح إعدادات الشاشة (الافتراضي 1234):");
+                if (userPin !== null) {
+                    if (userPin.trim() === pin) {
+                        isUnlocked = true;
+                        alert("تم فتح الإعدادات بنجاح. يمكنك الآن تغيير الفصل.");
+                    } else {
+                        alert("الرمز السري غير صحيح!");
+                    }
                 }
             } else {
                 isUnlocked = false;
@@ -391,16 +383,18 @@
 
         function changePinCode() {
             const currentPinInput = prompt("أدخل الرقم السري الحالي:");
-            if (currentPinInput === getPin()) {
-                const newPin = prompt("أدخل الرقم السري الجديد:");
-                if (newPin && newPin.trim() !== "") {
-                    localStorage.setItem('screen_secret_pin', newPin.trim());
-                    alert("تم تحديث الرقم السري بنجاح!");
+            if (currentPinInput !== null) {
+                if (currentPinInput.trim() === getPin()) {
+                    const newPin = prompt("أدخل الرقم السري الجديد:");
+                    if (newPin && newPin.trim() !== "") {
+                        localStorage.setItem('screen_secret_pin', newPin.trim());
+                        alert("تم تحديث الرقم السري بنجاح!");
+                    } else if (newPin !== null) {
+                        alert("لم يتم إدخال رقم صحيح.");
+                    }
                 } else {
-                    alert("لم يتم إدخال رقم صحيح.");
+                    alert("الرقم السري الحالي غير صحيح!");
                 }
-            } else if (currentPinInput !== null) {
-                alert("الرقم السري الحالي غير صحيح!");
             }
         }
 
@@ -429,9 +423,6 @@
 
         function saveScreenClass() {
             const val = document.getElementById('screenClassSelect').value;
-            const label = document.getElementById('screenClassSelect').selectedOptions[0].text;
-            const labelEl = document.getElementById('currentClassLabel');
-            if(labelEl) labelEl.textContent = label;
             localStorage.setItem('assigned_screen_class', val);
         }
 
@@ -462,18 +453,15 @@
 
             overlay.style.display = 'flex';
 
-            // تشغيل محرك النطق الصوتي فور استقبال النداء
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const speechText = `تنبيه لفصل ${document.getElementById('screenClassSelect').selectedOptions[0].text}. الطـالب. ${data.studentName}. ${data.message}`;
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ar-SA';
-                utterance.rate = 0.85; // سرعة هادئة وواضحة للفصل
-                utterance.pitch = 1;
+                utterance.rate = 0.85;
                 window.speechSynthesis.speak(utterance);
             }
 
-            // إغلاق التنبيه تلقائياً بعد دقيقة واحدة
             setTimeout(() => {
                 closeAlertOverlay();
             }, 60000);
