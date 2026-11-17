@@ -310,6 +310,7 @@
     </main>
 
     <div class="alert-overlay" id="alertOverlay">
+        <!-- تم تصحيح المعرف هنا ليطابق دالة الجافاسكريبت -->
         <div class="alert-modal" id="alertModalBox">
             <div class="alert-badge" id="alertBadge">استدعاء إداري</div>
             <div class="alert-student" id="alertStudent">اسم الطالب</div>
@@ -426,7 +427,7 @@
 
         function displayCallOnScreen(data) {
             const overlay = document.getElementById('alertOverlay');
-            const modal = document.getElementById('modalCardBox');
+            const modal = document.getElementById('alertModalBox'); // مطابق تماماً لمعرف الـ HTML
             
             document.getElementById('alertBadge').innerText = data.urgency === 'urgent' ? '⚠️ نداء عاجل جداً' : '📢 استدعاء إداري';
             document.getElementById('alertStudent').innerText = data.studentName;
