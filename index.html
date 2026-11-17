@@ -322,6 +322,10 @@
     </footer>
 
     <script>
+        window.onload = function() {
+            updateClassOptions();
+        };
+
         function updateClassOptions() {
             const grade = document.getElementById('selectGrade').value;
             const classSelect = document.getElementById('selectClass');
@@ -372,11 +376,11 @@
                 message: message,
                 urgency: urgency,
                 classNameText: classNameText,
-                timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+                timestamp: new Date().toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }),
+                nonce: Date.now() // ضمان تفرد الحدث حتى لو تكرر النداء
             };
 
-            // استخدام رقم عشوائي لضمان تحديث التخزين المحلي حتى لو تكرر نفس النداء
-            localStorage.setItem('school_call_event', JSON.stringify({ ...payload, randomId: Math.random() }));
+            localStorage.setItem('school_call_event', JSON.stringify(payload));
             addToCallLog(payload);
             alert('تم إرسال النداء بنجاح إلى شاشات الفصول المستهدفة!');
         }
