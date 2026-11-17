@@ -152,15 +152,16 @@
         }
 
         .btn-activate {
-            background: var(--gold-accent);
+            background: var(--emerald-primary);
             color: white;
             border: none;
-            padding: 14px 35px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            padding: 16px 40px;
+            font-size: 1.2rem;
+            font-weight: 800;
             border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
+            box-shadow: 0 4px 20px rgba(5, 150, 105, 0.4);
+            animation: pulse-slow 2s infinite;
         }
 
         .status-badge {
@@ -263,7 +264,7 @@
 
         @keyframes pulse-slow {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.03); }
         }
     </style>
 </head>
@@ -297,20 +298,21 @@
 
     <main>
         <div class="screen-container">
-            <div class="screen-standby-icon">🏫</div>
-            <div class="screen-title" id="displayTitle">شاشة العرض الذكية مجهزة</div>
+            <div class="screen-standby-icon">🔊</div>
+            <div class="screen-title" id="displayTitle">اضغط هنا لتنشيط نظام الصوت</div>
             <div class="screen-desc" id="displayDesc">
-                الفصل الحالي: <span id="currentClassLabel" style="color: var(--gold-accent); font-weight: 800;">الصف الرابع (أ)</span>
-                <span style="font-size: 0.85rem; color: #64748b; background: #f1f5f9; padding: 2px 8px; border-radius: 6px; margin-right: 8px; border: 1px solid #cbd5e1;" id="currentClassId">ID: 4-A</span>
+                لضمان عمل النداء الصوتي الآلي في الشاشة، يرجى النقر على الزر أدناه مرة واحدة عند تشغيل الشاشة.
             </div>
-            <button class="btn-activate" id="activateBtn" disabled onclick="activateSpeechEngine()">🔊 تفعيل الصوت الآلي للشاشة</button>
+            <!-- زر تفاعلي رئيسي لفتح قفل الصوت في المتصفح -->
+            <button class="btn-activate" id="activateBtn" onclick="activateAudioSystem()">
+                ⚡ تفعيل الصوت واستعداد الشاشة
+            </button>
             <br>
             <div class="status-badge" id="lockStatus">🔒 الإعدادات مقفلة برقم سري</div>
         </div>
     </main>
 
     <div class="alert-overlay" id="alertOverlay">
-        <!-- تم تصحيح المعرف هنا ليطابق دالة الجافاسكريبت -->
         <div class="alert-modal" id="alertModalBox">
             <div class="alert-badge" id="alertBadge">استدعاء إداري</div>
             <div class="alert-student" id="alertStudent">اسم الطالب</div>
@@ -323,7 +325,14 @@
         إعداد وبرمجة: <span>أ. صلاح سعد الرحيمان</span> (0530166681)
     </footer>
 
+    <!-- عنصر صوتي احتياطي (Audio Context / Silent Audio) لكسر حماية المتصفح -->
+    <audio id="silentAudio" preload="auto">
+        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
     <script>
+        let audioUnlocked = false;
+
         function getPin() {
             return localStorage.getItem('screen_secret_pin') || "1234";
         }
@@ -338,6 +347,31 @@
             }
             updateLockUI();
         };
+
+        // دالة تفعيل وتنشيط محرك الصوت (إلغاء حظر المتصفح)
+        function activateAudioSystem() {
+            if ('speechSynthesis' in window) {
+                // إجبار المتصفح على منح الصلاحية الصوتية عبر نطق رسالة أولية قصيرة
+                window.speechSynthesis.cancel();
+                const testUtterance = new SpeechSynthesisUtterance("تم تفعيل النظام الصوتي بنجاح");
+                testUtterance.lang = 'ar-SA';
+                testUtterance.volume = 1;
+                window.speechSynthesis.speak(testUtterance);
+                
+                audioUnlocked = true;
+                
+                // تغيير واجهة الشاشة لتصبح جاهزة وفي وضع الاستعداد
+                document.getElementById('displayTitle').innerText = "شاشة العرض الذكية نشطة";
+                document.getElementById('displayDesc').innerHTML = `الفصل الحالي: <span id="currentClassLabel" style="color: var(--gold-accent); font-weight: 800;">${document.getElementById('screenClassSelect').selectedOptions[0].text}</span>`;
+                
+                const btn = document.getElementById('activateBtn');
+                btn.style.background = "#059669";
+                btn.innerHTML = "✅ الصوت والاتصال يعملان بامتياز";
+                btn.disabled = true;
+            } else {
+                alert("عذراً، متصفحك لا يدعم ميزة التحدث الآلي (Speech Synthesis).");
+            }
+        }
 
         function toggleLock() {
             if (!isUnlocked) {
@@ -372,14 +406,12 @@
 
         function updateLockUI() {
             const classSelect = document.getElementById('screenClassSelect');
-            const activateBtn = document.getElementById('activateBtn');
             const lockToggleBtn = document.getElementById('lockToggleBtn');
             const changePinBtn = document.getElementById('changePinBtn');
             const lockStatus = document.getElementById('lockStatus');
 
             if (isUnlocked) {
                 classSelect.disabled = false;
-                activateBtn.disabled = false;
                 changePinBtn.style.display = "inline-block";
                 lockToggleBtn.className = "lock-btn";
                 lockToggleBtn.innerHTML = "🔒 إغلاق وتأمين الشاشة";
@@ -387,7 +419,6 @@
                 lockStatus.innerText = "🔓 وضع التعديل متاح (مفتوح)";
             } else {
                 classSelect.disabled = true;
-                activateBtn.disabled = true;
                 changePinBtn.style.display = "none";
                 lockToggleBtn.className = "unlock-btn";
                 lockToggleBtn.innerHTML = "🔓 فتح الإعدادات (رمز سري)";
@@ -399,19 +430,9 @@
         function saveScreenClass() {
             const val = document.getElementById('screenClassSelect').value;
             const label = document.getElementById('screenClassSelect').selectedOptions[0].text;
-            document.getElementById('currentClassLabel').textContent = label;
-            document.getElementById('currentClassId').textContent = "ID: " + val;
+            const labelEl = document.getElementById('currentClassLabel');
+            if(labelEl) labelEl.textContent = label;
             localStorage.setItem('assigned_screen_class', val);
-        }
-
-        function activateSpeechEngine() {
-            if ('speechSynthesis' in window) {
-                const msg = new SpeechSynthesisUtterance("تم تفعيل شاشة الفصل بنجاح");
-                msg.lang = 'ar-SA';
-                window.speechSynthesis.speak(msg);
-                document.getElementById('displayTitle').innerText = "الشاشة نشطة وتعمل";
-                document.getElementById('displayDesc').innerText = "تم تفعيل الصوت. قم بتأمين الشاشة الآن.";
-            }
         }
 
         window.addEventListener('storage', function(e) {
@@ -427,7 +448,7 @@
 
         function displayCallOnScreen(data) {
             const overlay = document.getElementById('alertOverlay');
-            const modal = document.getElementById('alertModalBox'); // مطابق تماماً لمعرف الـ HTML
+            const modal = document.getElementById('alertModalBox');[cite: 11]
             
             document.getElementById('alertBadge').innerText = data.urgency === 'urgent' ? '⚠️ نداء عاجل جداً' : '📢 استدعاء إداري';
             document.getElementById('alertStudent').innerText = data.studentName;
@@ -441,14 +462,21 @@
 
             overlay.style.display = 'flex';
 
+            // تشغيل محرك النطق الصوتي فور استقبال النداء
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const speechText = `تنبيه لفصل ${document.getElementById('screenClassSelect').selectedOptions[0].text}. ${data.studentName}. ${data.message}`;
+                const speechText = `تنبيه لفصل ${document.getElementById('screenClassSelect').selectedOptions[0].text}. الطـالب. ${data.studentName}. ${data.message}`;
                 const utterance = new SpeechSynthesisUtterance(speechText);
                 utterance.lang = 'ar-SA';
-                utterance.rate = 0.9;
+                utterance.rate = 0.85; // سرعة هادئة وواضحة للفصل
+                utterance.pitch = 1;
                 window.speechSynthesis.speak(utterance);
             }
+
+            // إغلاق التنبيه تلقائياً بعد دقيقة واحدة
+            setTimeout(() => {
+                closeAlertOverlay();
+            }, 60000);
         }
 
         function closeAlertOverlay() {
